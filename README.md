@@ -2,11 +2,11 @@
 
 *rctree* is a "DOM-like" tree implemented using reference counting.
 
-## Origin
+### Origin
 
 This a fork of the [rust-forest](https://github.com/SimonSapin/rust-forest) rctree.
 
-## Details
+### Details
 
 "DOM-like" here means that data structures can be used to represent
 the parsed content of an HTML or XML document,
@@ -61,7 +61,7 @@ Disadvantages:
   which causes run-time overhead.
 * Nodes are allocated individually, which may cause memory fragmentation and hurt performance.
 
-## Differences
+### Differences
 
 * `NodeRef` -> `Node`.
 * All nodes has a root node reference that can be accessed at *O(1)*.
