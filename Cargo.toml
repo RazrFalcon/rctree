@@ -1,0 +1,13 @@
+[package]
+name = "rctree"
+version = "0.2.0"
+authors = [
+    "Simon Sapin <simon.sapin@exyr.org>",
+    "Reizner Evgeniy <razrfalcon@gmail.com>"
+]
+description = "A tree of reference-counted nodes, with `RefCell` for mutability"
+license = "MIT"
+
+[dev-dependencies]
+pretty_assertions = "0.5.1"
+indoc = "0.2"
