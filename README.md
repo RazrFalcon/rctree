@@ -68,6 +68,8 @@ Disadvantages:
 * Added `make_copy`, `make_deep_copy`, `has_children` and `root` methods.
 * `Node` implements `PartialEq` now.
 * Used `std` features like `Rc::ptr_eq`, `Ref` and `RefMut` instead of handwritten one.
+* `borrow_mut`, `detach`, `append`, `prepend`, `insert_after`, `insert_before`,
+  `make_copy` and `make_deep_copy` are marked as `mut`.
 
 ### Usage
 

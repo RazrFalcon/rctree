@@ -5,7 +5,7 @@ authors = [
     "Simon Sapin <simon.sapin@exyr.org>",
     "Reizner Evgeniy <razrfalcon@gmail.com>"
 ]
-description = "A tree of reference-counted nodes, with `RefCell` for mutability"
+description = "A 'DOM-like' tree implemented using reference counting"
 license = "MIT"
 
 [dev-dependencies]
