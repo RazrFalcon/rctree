@@ -1,5 +1,7 @@
 # rctree
 [![Build Status](https://travis-ci.org/RazrFalcon/rctree.svg?branch=master)](https://travis-ci.org/RazrFalcon/rctree)
+[![Crates.io](https://img.shields.io/crates/v/rctree.svg)](https://crates.io/crates/rctree)
+[![Documentation](https://docs.rs/rctree/badge.svg)](https://docs.rs/rctree)
 
 *rctree* is a "DOM-like" tree implemented using reference counting.
 

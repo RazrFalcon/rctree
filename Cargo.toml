@@ -1,12 +1,16 @@
 [package]
 name = "rctree"
-version = "0.2.0"
+# When updating version, also modify html_root_url in the lib.rs and in the README
+version = "0.2.1"
 authors = [
     "Simon Sapin <simon.sapin@exyr.org>",
     "Reizner Evgeniy <razrfalcon@gmail.com>"
 ]
-description = "A 'DOM-like' tree implemented using reference counting"
 license = "MIT"
+description = "A 'DOM-like' tree implemented using reference counting"
+repository = "https://github.com/RazrFalcon/rctree"
+documentation = "https://docs.rs/rctree/"
+readme = "README.md"
 
 [dev-dependencies]
 pretty_assertions = "0.5.1"
