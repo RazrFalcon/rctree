@@ -1,4 +1,5 @@
 # rctree
+[![Build Status](https://travis-ci.org/RazrFalcon/rctree.svg?branch=master)](https://travis-ci.org/RazrFalcon/rctree)
 
 *rctree* is a "DOM-like" tree implemented using reference counting.
 
@@ -70,10 +71,20 @@ Disadvantages:
 * Used `std` features like `Rc::ptr_eq`, `Ref` and `RefMut` instead of handwritten one.
 * `borrow_mut`, `detach`, `append`, `prepend`, `insert_after`, `insert_before`,
   `make_copy` and `make_deep_copy` are marked as `mut`.
+* `append`, `prepend`, `insert_after` and `insert_before` methods will panic if
+  the provided child/sibling is the same the same node.
 
 ### Usage
 
 Dependency: [Rust](https://www.rust-lang.org/) >= 1.17
+
+#### As source
+
+The library consists of a single file which you can copy to your project.
+
+This is a preferable solution since you can tweak the crate for your needs.
+
+#### As crate
 
 Add this to your `Cargo.toml`:
 
