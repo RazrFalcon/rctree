@@ -70,11 +70,11 @@ Disadvantages:
 * All nodes has a root node reference that can be accessed at *O(1)*.
 * Added `make_copy`, `make_deep_copy`, `has_children` and `root` methods.
 * `Node` implements `PartialEq` now.
-* Used `std` features like `Rc::ptr_eq`, `Ref` and `RefMut` instead of handwritten one.
+* Uses `std` features like `Rc::ptr_eq`, `Ref` and `RefMut` instead of handwritten one.
 * `borrow_mut`, `detach`, `append`, `prepend`, `insert_after`, `insert_before`,
   `make_copy` and `make_deep_copy` are marked as `mut`.
-* `append`, `prepend`, `insert_after` and `insert_before` methods will panic if
-  the provided child/sibling is the same the same node.
+* `append`, `prepend`, `insert_after` and `insert_before` methods will panic
+  with a nicer message if the current and provided child/sibling nodes are the same.
 
 ### Usage
 
