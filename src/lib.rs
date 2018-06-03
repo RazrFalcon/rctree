@@ -514,6 +514,19 @@ impl<T> NodeData<T> {
 }
 
 
+/// Iterators prelude.
+pub mod iterator {
+    pub use super::Ancestors;
+    pub use super::PrecedingSiblings;
+    pub use super::FollowingSiblings;
+    pub use super::Children;
+    pub use super::ReverseChildren;
+    pub use super::Descendants;
+    pub use super::Traverse;
+    pub use super::ReverseTraverse;
+    pub use super::NodeEdge;
+}
+
 macro_rules! impl_node_iterator {
     ($name: ident, $next: expr) => {
         impl<T> Iterator for $name<T> {
