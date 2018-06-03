@@ -82,9 +82,9 @@ Dependency: [Rust](https://www.rust-lang.org/) >= 1.17
 
 #### As source
 
-The library consists of a single file which you can copy to your project.
+The crate consists of a single file which you can copy to your project.
 
-This is a preferable solution since you can tweak the crate for your needs.
+This is a preferable solution since you can tweak it for your needs.
 
 #### As crate
 
