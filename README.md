@@ -7,7 +7,7 @@
 
 ### Origin
 
-This a fork of the [rust-forest](https://github.com/SimonSapin/rust-forest) rctree.
+This is a fork of the [rust-forest](https://github.com/SimonSapin/rust-forest) rctree.
 
 ### Details
 
