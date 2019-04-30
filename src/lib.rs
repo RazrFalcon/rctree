@@ -513,6 +513,27 @@ impl<T> NodeData<T> {
     }
 }
 
+impl<T> Drop for NodeData<T> {
+    fn drop(&mut self) {
+        // Collect all descendant nodes and detach them to prevent the stack overflow.
+
+        let mut stack = Vec::new();
+        if let Some(first_child) = self.first_child.as_ref() {
+            // Create `Node` from `NodeData`.
+            let first_child = Node(first_child.clone());
+            // Iterate `self` children, without creating yet another `Node`.
+            for child1 in first_child.following_siblings() {
+                for child2 in child1.descendants() {
+                    stack.push(child2);
+                }
+            }
+        }
+
+        for mut node in stack {
+            node.detach();
+        }
+    }
+}
 
 /// Iterators prelude.
 pub mod iterator {

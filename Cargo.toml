@@ -4,7 +4,7 @@ name = "rctree"
 version = "0.2.1"
 authors = [
     "Simon Sapin <simon.sapin@exyr.org>",
-    "Reizner Evgeniy <razrfalcon@gmail.com>"
+    "Evgeniy Reizner <razrfalcon@gmail.com>"
 ]
 license = "MIT"
 description = "A 'DOM-like' tree implemented using reference counting"

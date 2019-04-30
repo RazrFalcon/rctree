@@ -149,15 +149,15 @@ fn iter_1() {
     for _ in node1.descendants() {}
 }
 
-//#[test]
-//fn stack_overflow() {
-//    let mut parent = Node::new(1);
-//    for _ in 0..1000000 {
-//        let node = Node::new(1);
-//        parent.append(node.clone());
-//        parent = node;
-//    }
-//}
+#[test]
+fn stack_overflow() {
+    let mut parent = Node::new(1);
+    for _ in 0..200_000 {
+        let mut node = Node::new(1);
+        node.append(parent.clone());
+        parent = node;
+    }
+}
 
 #[test]
 fn root_1() {
