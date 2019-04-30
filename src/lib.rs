@@ -57,7 +57,7 @@ Disadvantages:
 
 */
 
-#![doc(html_root_url = "https://docs.rs/rctree/0.2.1")]
+#![doc(html_root_url = "https://docs.rs/rctree/0.2.2")]
 
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
