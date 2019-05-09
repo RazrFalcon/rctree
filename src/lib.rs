@@ -178,7 +178,7 @@ impl<T> Node<T> {
         Some(Node(try_opt!(try_opt!(self.0.borrow().last_child.as_ref()).upgrade())))
     }
 
-    /// Returns a previous sibling of this node, unless it is a first child.
+    /// Returns the previous sibling of this node, unless it is a first child.
     ///
     /// # Panics
     ///
@@ -187,7 +187,7 @@ impl<T> Node<T> {
         Some(Node(try_opt!(try_opt!(self.0.borrow().previous_sibling.as_ref()).upgrade())))
     }
 
-    /// Returns a previous sibling of this node, unless it is a first child.
+    /// Returns the next sibling of this node, unless it is a last child.
     ///
     /// # Panics
     ///
