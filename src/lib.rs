@@ -143,7 +143,7 @@ impl<T> Node<T> {
     ///
     /// # Panics
     ///
-    /// Panics if the node is currently mutability borrowed.
+    /// Panics if the node is currently mutably borrowed.
     pub fn root(&self) -> Node<T> {
         match self.0.borrow().root.as_ref() {
             Some(v) => Node(v.upgrade().unwrap()),
@@ -155,7 +155,7 @@ impl<T> Node<T> {
     ///
     /// # Panics
     ///
-    /// Panics if the node is currently mutability borrowed.
+    /// Panics if the node is currently mutably borrowed.
     pub fn parent(&self) -> Option<Node<T>> {
         Some(Node(try_opt!(try_opt!(self.0.borrow().parent.as_ref()).upgrade())))
     }
@@ -164,7 +164,7 @@ impl<T> Node<T> {
     ///
     /// # Panics
     ///
-    /// Panics if the node is currently mutability borrowed.
+    /// Panics if the node is currently mutably borrowed.
     pub fn first_child(&self) -> Option<Node<T>> {
         Some(Node(try_opt!(self.0.borrow().first_child.as_ref()).clone()))
     }
@@ -173,7 +173,7 @@ impl<T> Node<T> {
     ///
     /// # Panics
     ///
-    /// Panics if the node is currently mutability borrowed.
+    /// Panics if the node is currently mutably borrowed.
     pub fn last_child(&self) -> Option<Node<T>> {
         Some(Node(try_opt!(try_opt!(self.0.borrow().last_child.as_ref()).upgrade())))
     }
@@ -182,7 +182,7 @@ impl<T> Node<T> {
     ///
     /// # Panics
     ///
-    /// Panics if the node is currently mutability borrowed.
+    /// Panics if the node is currently mutably borrowed.
     pub fn previous_sibling(&self) -> Option<Node<T>> {
         Some(Node(try_opt!(try_opt!(self.0.borrow().previous_sibling.as_ref()).upgrade())))
     }
@@ -191,7 +191,7 @@ impl<T> Node<T> {
     ///
     /// # Panics
     ///
-    /// Panics if the node is currently mutability borrowed.
+    /// Panics if the node is currently mutably borrowed.
     pub fn next_sibling(&self) -> Option<Node<T>> {
         Some(Node(try_opt!(self.0.borrow().next_sibling.as_ref()).clone()))
     }
@@ -200,7 +200,7 @@ impl<T> Node<T> {
     ///
     /// # Panics
     ///
-    /// Panics if the node is currently mutability borrowed.
+    /// Panics if the node is currently mutably borrowed.
     pub fn borrow(&self) -> Ref<T> {
         Ref::map(self.0.borrow(), |v| &v.data)
     }
@@ -239,7 +239,7 @@ impl<T> Node<T> {
     ///
     /// # Panics
     ///
-    /// Panics if the node is currently mutability borrowed.
+    /// Panics if the node is currently mutably borrowed.
     pub fn children(&self) -> Children<T> {
         Children(self.first_child())
     }
@@ -248,7 +248,7 @@ impl<T> Node<T> {
     ///
     /// # Panics
     ///
-    /// Panics if the node is currently mutability borrowed.
+    /// Panics if the node is currently mutably borrowed.
     pub fn has_children(&self) -> bool {
         self.first_child().is_some()
     }
@@ -257,7 +257,7 @@ impl<T> Node<T> {
     ///
     /// # Panics
     ///
-    /// Panics if the node is currently mutability borrowed.
+    /// Panics if the node is currently mutably borrowed.
     pub fn reverse_children(&self) -> ReverseChildren<T> {
         ReverseChildren(self.last_child())
     }
@@ -459,7 +459,7 @@ impl<T> Node<T> {
     ///
     /// # Panics
     ///
-    /// Panics if any of the descendant nodes are currently mutability borrowed.
+    /// Panics if any of the descendant nodes are currently mutably borrowed.
     pub fn make_deep_copy(&mut self) -> Node<T>
         where T: Clone
     {
@@ -555,7 +555,7 @@ macro_rules! impl_node_iterator {
 
             /// # Panics
             ///
-            /// Panics if the node about to be yielded is currently mutability borrowed.
+            /// Panics if the node about to be yielded is currently mutably borrowed.
             fn next(&mut self) -> Option<Self::Item> {
                 match self.0.take() {
                     Some(node) => {
@@ -598,7 +598,7 @@ impl<T> Iterator for Descendants<T> {
 
     /// # Panics
     ///
-    /// Panics if the node about to be yielded is currently mutability borrowed.
+    /// Panics if the node about to be yielded is currently mutably borrowed.
     fn next(&mut self) -> Option<Self::Item> {
         loop {
             match self.0.next() {
@@ -637,7 +637,7 @@ impl<T> Iterator for Traverse<T> {
 
     /// # Panics
     ///
-    /// Panics if the node about to be yielded is currently mutability borrowed.
+    /// Panics if the node about to be yielded is currently mutably borrowed.
     fn next(&mut self) -> Option<Self::Item> {
         match self.next.take() {
             Some(item) => {
@@ -685,7 +685,7 @@ impl<T> Iterator for ReverseTraverse<T> {
 
     /// # Panics
     ///
-    /// Panics if the node about to be yielded is currently mutability borrowed.
+    /// Panics if the node about to be yielded is currently mutably borrowed.
     fn next(&mut self) -> Option<Self::Item> {
         match self.next.take() {
             Some(item) => {
