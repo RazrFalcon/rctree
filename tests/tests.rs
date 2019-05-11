@@ -2,7 +2,7 @@
 #[macro_use] extern crate pretty_assertions;
 extern crate rctree;
 
-use rctree::Node;
+use rctree::{Node, NodeEdge};
 
 use std::fmt;
 
@@ -244,4 +244,92 @@ fn children_2() {
 
     assert!(children.next().is_none());
     assert!(children.next_back().is_none());
+}
+
+#[test]
+fn traverse_1() {
+    let mut node1 = Node::new("node1");
+    let node2 = Node::new("node2");
+    let node3 = Node::new("node3");
+    node1.append(node2.clone());
+    node1.append(node3.clone());
+
+    let mut traverse = node1.traverse();
+
+    let t = traverse.next();
+    assert!(t.is_some());
+    let t = t.unwrap();
+    assert_eq!(t, NodeEdge::Start(node1.clone()));
+
+    let t = traverse.next();
+    assert!(t.is_some());
+    let t = t.unwrap();
+    assert_eq!(t, NodeEdge::Start(node2.clone()));
+
+    let t = traverse.next();
+    assert!(t.is_some());
+    let t = t.unwrap();
+    assert_eq!(t, NodeEdge::End(node2.clone()));
+
+    let t = traverse.next();
+    assert!(t.is_some());
+    let t = t.unwrap();
+    assert_eq!(t, NodeEdge::Start(node3.clone()));
+
+    let t = traverse.next();
+    assert!(t.is_some());
+    let t = t.unwrap();
+    assert_eq!(t, NodeEdge::End(node3.clone()));
+
+    let t = traverse.next();
+    assert!(t.is_some());
+    let t = t.unwrap();
+    assert_eq!(t, NodeEdge::End(node1.clone()));
+
+    assert!(traverse.next().is_none());
+    assert!(traverse.next_back().is_none());
+}
+
+#[test]
+fn traverse_2() {
+    let mut node1 = Node::new("node1");
+    let node2 = Node::new("node2");
+    let node3 = Node::new("node3");
+    node1.append(node2.clone());
+    node1.append(node3.clone());
+
+    let mut traverse = node1.traverse();
+
+    let t = traverse.next_back();
+    assert!(t.is_some());
+    let t = t.unwrap();
+    assert_eq!(t, NodeEdge::End(node1.clone()));
+
+    let t = traverse.next_back();
+    assert!(t.is_some());
+    let t = t.unwrap();
+    assert_eq!(t, NodeEdge::End(node3.clone()));
+
+    let t = traverse.next_back();
+    assert!(t.is_some());
+    let t = t.unwrap();
+    assert_eq!(t, NodeEdge::Start(node3.clone()));
+
+    let t = traverse.next_back();
+    assert!(t.is_some());
+    let t = t.unwrap();
+    assert_eq!(t, NodeEdge::End(node2.clone()));
+
+    let t = traverse.next_back();
+    assert!(t.is_some());
+    let t = t.unwrap();
+    assert_eq!(t, NodeEdge::Start(node2.clone()));
+
+    let t = traverse.next_back();
+    assert!(t.is_some());
+    let t = t.unwrap();
+    assert_eq!(t, NodeEdge::Start(node1.clone()));
+
+    assert!(traverse.next().is_none());
+    assert!(traverse.next_back().is_none());
 }
