@@ -197,3 +197,51 @@ fn root_4() {
     assert_eq!(node2.root(), node1);
     assert_eq!(node3.root(), node1);
 }
+
+#[test]
+fn children_1() {
+    let mut node1 = Node::new("node1");
+    let node2 = Node::new("node2");
+    let node3 = Node::new("node3");
+    node1.append(node2.clone());
+    node1.append(node3.clone());
+
+    let mut children = node1.children();
+
+    let c = children.next();
+    assert!(c.is_some());
+    let c = c.unwrap();
+    assert_eq!(c, node2);
+
+    let c = children.next();
+    assert!(c.is_some());
+    let c = c.unwrap();
+    assert_eq!(c, node3);
+
+    assert!(children.next().is_none());
+    assert!(children.next_back().is_none());
+}
+
+#[test]
+fn children_2() {
+    let mut node1 = Node::new("node1");
+    let node2 = Node::new("node2");
+    let node3 = Node::new("node3");
+    node1.append(node2.clone());
+    node1.append(node3.clone());
+
+    let mut children = node1.children();
+
+    let c = children.next_back();
+    assert!(c.is_some());
+    let c = c.unwrap();
+    assert_eq!(c, node3);
+
+    let c = children.next_back();
+    assert!(c.is_some());
+    let c = c.unwrap();
+    assert_eq!(c, node2);
+
+    assert!(children.next().is_none());
+    assert!(children.next_back().is_none());
+}

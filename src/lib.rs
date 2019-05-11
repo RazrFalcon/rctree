@@ -241,7 +241,10 @@ impl<T> Node<T> {
     ///
     /// Panics if the node is currently mutably borrowed.
     pub fn children(&self) -> Children<T> {
-        Children(self.first_child())
+        Children {
+            next: self.first_child(),
+            next_back: self.last_child(),
+        }
     }
 
     /// Returns `true` if this node has children nodes.
@@ -251,15 +254,6 @@ impl<T> Node<T> {
     /// Panics if the node is currently mutably borrowed.
     pub fn has_children(&self) -> bool {
         self.first_child().is_some()
-    }
-
-    /// Returns an iterator of nodes to this node's children, in reverse order.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the node is currently mutably borrowed.
-    pub fn reverse_children(&self) -> ReverseChildren<T> {
-        ReverseChildren(self.last_child())
     }
 
     /// Returns an iterator of nodes to this node and its descendants, in tree order.
@@ -541,7 +535,6 @@ pub mod iterator {
     pub use super::PrecedingSiblings;
     pub use super::FollowingSiblings;
     pub use super::Children;
-    pub use super::ReverseChildren;
     pub use super::Descendants;
     pub use super::Traverse;
     pub use super::ReverseTraverse;
@@ -581,14 +574,61 @@ impl_node_iterator!(PrecedingSiblings, |node: &Node<T>| node.previous_sibling())
 pub struct FollowingSiblings<T>(Option<Node<T>>);
 impl_node_iterator!(FollowingSiblings, |node: &Node<T>| node.next_sibling());
 
-/// An iterator of nodes to the children of a given node.
-pub struct Children<T>(Option<Node<T>>);
-impl_node_iterator!(Children, |node: &Node<T>| node.next_sibling());
+/// A double ended iterator of nodes to the children of a given node.
+pub struct Children<T> {
+    next: Option<Node<T>>,
+    next_back: Option<Node<T>>,
+}
 
-/// An iterator of nodes to the children of a given node, in reverse order.
-pub struct ReverseChildren<T>(Option<Node<T>>);
-impl_node_iterator!(ReverseChildren, |node: &Node<T>| node.previous_sibling());
+impl<T> Children<T> {
+    // true if self.next_back's next sibling is self.next
+    fn finished(&self) -> bool {
+        match self.next_back {
+            Some(ref next_back) => next_back.next_sibling() == self.next,
+            _ => true,
+        }
+    }
+}
 
+impl<T> Iterator for Children<T> {
+    type Item = Node<T>;
+
+    /// # Panics
+    ///
+    /// Panics if the node about to be yielded is currently mutably borrowed.
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.finished() {
+            return None;
+        }
+
+        match self.next.take() {
+            Some(node) => {
+                self.next = node.next_sibling();
+                Some(node)
+            }
+            None => None
+        }
+    }
+}
+
+impl<T> DoubleEndedIterator for Children<T> {
+    /// # Panics
+    ///
+    /// Panics if the node about to be yielded is currently mutably borrowed.
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.finished() {
+            return None;
+        }
+
+        match self.next_back.take() {
+            Some(node) => {
+                self.next_back = node.previous_sibling();
+                Some(node)
+            }
+            None => None
+        }
+    }
+}
 
 /// An iterator of nodes to a given node and its descendants, in tree order.
 pub struct Descendants<T>(Traverse<T>);
