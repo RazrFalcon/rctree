@@ -241,7 +241,10 @@ impl<T> Node<T> {
     ///
     /// Panics if the node is currently mutably borrowed.
     pub fn children(&self) -> Children<T> {
-        Children(self.first_child())
+        Children {
+            next: self.first_child(),
+            next_back: self.last_child(),
+        }
     }
 
     /// Returns `true` if this node has children nodes.
@@ -251,15 +254,6 @@ impl<T> Node<T> {
     /// Panics if the node is currently mutably borrowed.
     pub fn has_children(&self) -> bool {
         self.first_child().is_some()
-    }
-
-    /// Returns an iterator of nodes to this node's children, in reverse order.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the node is currently mutably borrowed.
-    pub fn reverse_children(&self) -> ReverseChildren<T> {
-        ReverseChildren(self.last_child())
     }
 
     /// Returns an iterator of nodes to this node and its descendants, in tree order.
@@ -274,14 +268,7 @@ impl<T> Node<T> {
         Traverse {
             root: self.clone(),
             next: Some(NodeEdge::Start(self.clone())),
-        }
-    }
-
-    /// Returns an iterator of nodes to this node and its descendants, in tree order.
-    pub fn reverse_traverse(&self) -> ReverseTraverse<T> {
-        ReverseTraverse {
-            root: self.clone(),
-            next: Some(NodeEdge::End(self.clone())),
+            next_back: Some(NodeEdge::End(self.clone())),
         }
     }
 
@@ -541,10 +528,8 @@ pub mod iterator {
     pub use super::PrecedingSiblings;
     pub use super::FollowingSiblings;
     pub use super::Children;
-    pub use super::ReverseChildren;
     pub use super::Descendants;
     pub use super::Traverse;
-    pub use super::ReverseTraverse;
     pub use super::NodeEdge;
 }
 
@@ -581,14 +566,61 @@ impl_node_iterator!(PrecedingSiblings, |node: &Node<T>| node.previous_sibling())
 pub struct FollowingSiblings<T>(Option<Node<T>>);
 impl_node_iterator!(FollowingSiblings, |node: &Node<T>| node.next_sibling());
 
-/// An iterator of nodes to the children of a given node.
-pub struct Children<T>(Option<Node<T>>);
-impl_node_iterator!(Children, |node: &Node<T>| node.next_sibling());
+/// A double ended iterator of nodes to the children of a given node.
+pub struct Children<T> {
+    next: Option<Node<T>>,
+    next_back: Option<Node<T>>,
+}
 
-/// An iterator of nodes to the children of a given node, in reverse order.
-pub struct ReverseChildren<T>(Option<Node<T>>);
-impl_node_iterator!(ReverseChildren, |node: &Node<T>| node.previous_sibling());
+impl<T> Children<T> {
+    // true if self.next_back's next sibling is self.next
+    fn finished(&self) -> bool {
+        match self.next_back {
+            Some(ref next_back) => next_back.next_sibling() == self.next,
+            _ => true,
+        }
+    }
+}
 
+impl<T> Iterator for Children<T> {
+    type Item = Node<T>;
+
+    /// # Panics
+    ///
+    /// Panics if the node about to be yielded is currently mutably borrowed.
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.finished() {
+            return None;
+        }
+
+        match self.next.take() {
+            Some(node) => {
+                self.next = node.next_sibling();
+                Some(node)
+            }
+            None => None
+        }
+    }
+}
+
+impl<T> DoubleEndedIterator for Children<T> {
+    /// # Panics
+    ///
+    /// Panics if the node about to be yielded is currently mutably borrowed.
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.finished() {
+            return None;
+        }
+
+        match self.next_back.take() {
+            Some(node) => {
+                self.next_back = node.previous_sibling();
+                Some(node)
+            }
+            None => None
+        }
+    }
+}
 
 /// An iterator of nodes to a given node and its descendants, in tree order.
 pub struct Descendants<T>(Traverse<T>);
@@ -612,7 +644,7 @@ impl<T> Iterator for Descendants<T> {
 
 
 /// A node type during traverse.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum NodeEdge<T> {
     /// Indicates that start of a node that has children.
     /// Yielded by `Traverse::next` before the node's descendants.
@@ -625,11 +657,89 @@ pub enum NodeEdge<T> {
     End(Node<T>),
 }
 
+// Implement PartialEq manually, because we do not need to require T: PartialEq
+impl<T> PartialEq for NodeEdge<T> {
+    fn eq(&self, other: &NodeEdge<T>) -> bool {
+        match (&*self, &*other) {
+            (&NodeEdge::Start(ref n1), &NodeEdge::Start(ref n2)) => *n1 == *n2,
+            (&NodeEdge::End(ref n1), &NodeEdge::End(ref n2)) => *n1 == *n2,
+            _ => false,
+        }
+    }
+}
 
-/// An iterator of nodes to a given node and its descendants, in tree order.
+impl<T> NodeEdge<T> {
+    fn next_item(&self, root: &Node<T>) -> Option<NodeEdge<T>> {
+        match *self {
+            NodeEdge::Start(ref node) => match node.first_child() {
+                Some(first_child) => Some(NodeEdge::Start(first_child)),
+                None => Some(NodeEdge::End(node.clone())),
+            },
+            NodeEdge::End(ref node) => {
+                if *node == *root {
+                    None
+                } else {
+                    match node.next_sibling() {
+                        Some(next_sibling) => Some(NodeEdge::Start(next_sibling)),
+                        None => match node.parent() {
+                            Some(parent) => Some(NodeEdge::End(parent)),
+
+                            // `node.parent()` here can only be `None`
+                            // if the tree has been modified during iteration,
+                            // but silently stoping iteration
+                            // seems a more sensible behavior than panicking.
+                            None => None,
+                        },
+                    }
+                }
+            }
+        }
+    }
+
+    fn previous_item(&self, root: &Node<T>) -> Option<NodeEdge<T>> {
+        match *self {
+            NodeEdge::End(ref node) => match node.last_child() {
+                Some(last_child) => Some(NodeEdge::End(last_child)),
+                None => Some(NodeEdge::Start(node.clone())),
+            },
+            NodeEdge::Start(ref node) => {
+                if *node == *root {
+                    None
+                } else {
+                    match node.previous_sibling() {
+                        Some(previous_sibling) => Some(NodeEdge::End(previous_sibling)),
+                        None => match node.parent() {
+                            Some(parent) => Some(NodeEdge::Start(parent)),
+
+                            // `node.parent()` here can only be `None`
+                            // if the tree has been modified during iteration,
+                            // but silently stoping iteration
+                            // seems a more sensible behavior than panicking.
+                            None => None
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/// A double ended iterator of nodes to a given node and its descendants,
+/// in tree order.
 pub struct Traverse<T> {
     root: Node<T>,
     next: Option<NodeEdge<T>>,
+    next_back: Option<NodeEdge<T>>,
+}
+
+impl<T> Traverse<T> {
+    // true if self.next_back's next item is self.next
+    fn finished(&self) -> bool {
+        match self.next_back {
+            Some(ref next_back) => next_back.next_item(&self.root) == self.next,
+            _ => true,
+        }
+    }
 }
 
 impl<T> Iterator for Traverse<T> {
@@ -639,34 +749,13 @@ impl<T> Iterator for Traverse<T> {
     ///
     /// Panics if the node about to be yielded is currently mutably borrowed.
     fn next(&mut self) -> Option<Self::Item> {
+        if self.finished() {
+            return None;
+        }
+
         match self.next.take() {
             Some(item) => {
-                self.next = match item {
-                    NodeEdge::Start(ref node) => {
-                        match node.first_child() {
-                            Some(first_child) => Some(NodeEdge::Start(first_child)),
-                            None => Some(NodeEdge::End(node.clone()))
-                        }
-                    }
-                    NodeEdge::End(ref node) => {
-                        if *node == self.root {
-                            None
-                        } else {
-                            match node.next_sibling() {
-                                Some(next_sibling) => Some(NodeEdge::Start(next_sibling)),
-                                None => match node.parent() {
-                                    Some(parent) => Some(NodeEdge::End(parent)),
-
-                                    // `node.parent()` here can only be `None`
-                                    // if the tree has been modified during iteration,
-                                    // but silently stoping iteration
-                                    // seems a more sensible behavior than panicking.
-                                    None => None
-                                }
-                            }
-                        }
-                    }
-                };
+                self.next = item.next_item(&self.root);
                 Some(item)
             }
             None => None
@@ -674,47 +763,18 @@ impl<T> Iterator for Traverse<T> {
     }
 }
 
-/// An iterator of nodes to a given node and its descendants, in reverse tree order.
-pub struct ReverseTraverse<T> {
-    root: Node<T>,
-    next: Option<NodeEdge<T>>,
-}
-
-impl<T> Iterator for ReverseTraverse<T> {
-    type Item = NodeEdge<T>;
-
+impl<T> DoubleEndedIterator for Traverse<T> {
     /// # Panics
     ///
     /// Panics if the node about to be yielded is currently mutably borrowed.
-    fn next(&mut self) -> Option<Self::Item> {
-        match self.next.take() {
-            Some(item) => {
-                self.next = match item {
-                    NodeEdge::End(ref node) => {
-                        match node.last_child() {
-                            Some(last_child) => Some(NodeEdge::End(last_child)),
-                            None => Some(NodeEdge::Start(node.clone()))
-                        }
-                    }
-                    NodeEdge::Start(ref node) => {
-                        if *node == self.root {
-                            None
-                        } else {
-                            match node.previous_sibling() {
-                                Some(previous_sibling) => Some(NodeEdge::End(previous_sibling)),
-                                None => match node.parent() {
-                                    Some(parent) => Some(NodeEdge::Start(parent)),
+    fn next_back(&mut self) -> Option<Self::Item> {
+        if self.finished() {
+            return None;
+        }
 
-                                    // `node.parent()` here can only be `None`
-                                    // if the tree has been modified during iteration,
-                                    // but silently stoping iteration
-                                    // seems a more sensible behavior than panicking.
-                                    None => None
-                                }
-                            }
-                        }
-                    }
-                };
+        match self.next_back.take() {
+            Some(item) => {
+                self.next_back = item.previous_item(&self.root);
                 Some(item)
             }
             None => None
