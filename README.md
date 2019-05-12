@@ -64,36 +64,9 @@ Disadvantages:
   which causes run-time overhead.
 * Nodes are allocated individually, which may cause memory fragmentation and hurt performance.
 
-### Differences
-
-* `NodeRef` -> `Node`.
-* All nodes has a root node reference that can be accessed at *O(1)*.
-* Added `make_copy`, `make_deep_copy`, `has_children` and `root` methods.
-* `Node` implements `PartialEq` now.
-* Uses `std` features like `Rc::ptr_eq`, `Ref` and `RefMut` instead of handwritten one.
-* `borrow_mut`, `detach`, `append`, `prepend`, `insert_after`, `insert_before`,
-  `make_copy` and `make_deep_copy` are marked as `mut`.
-* `append`, `prepend`, `insert_after` and `insert_before` methods will panic
-  with a nicer message if the current and provided child/sibling nodes are the same.
-
 ### Usage
 
 Dependency: [Rust](https://www.rust-lang.org/) >= 1.17
-
-#### As source
-
-The crate consists of a single file which you can copy to your project.
-
-This is a preferable solution since you can tweak it for your needs.
-
-#### As crate
-
-Add this to your `Cargo.toml`:
-
-```toml
-[dependencies]
-rctree = "0.2"
-```
 
 ### License
 
