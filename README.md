@@ -64,9 +64,9 @@ Disadvantages:
   which causes run-time overhead.
 * Nodes are allocated individually, which may cause memory fragmentation and hurt performance.
 
-### Usage
+### Dependency
 
-Dependency: [Rust](https://www.rust-lang.org/) >= 1.17
+[Rust](https://www.rust-lang.org/) >= 1.17
 
 ### License
 
