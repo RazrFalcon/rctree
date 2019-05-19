@@ -77,6 +77,9 @@ type WeakLink<T> = Weak<RefCell<NodeData<T>>>;
 /// **Note:** Cloning a `Node` only increments a reference count. It does not copy the data.
 pub struct Node<T>(Link<T>);
 
+/// A weak reference to a node holding a value of type `T`.
+pub struct WeakNode<T>(WeakLink<T>);
+
 struct NodeData<T> {
     root: Option<WeakLink<T>>,
     parent: Option<WeakLink<T>>,
@@ -135,6 +138,11 @@ impl<T> Node<T> {
             next_sibling: None,
             data,
         })))
+    }
+
+    /// Returns a weak referece to a node.
+    pub fn downgrade(&self) -> WeakNode<T> {
+        WeakNode(Rc::downgrade(&self.0))
     }
 
     /// Returns a root node.
@@ -466,6 +474,13 @@ impl<T> Node<T> {
                 Node::_make_deep_copy(&mut new_node, &child);
             }
         }
+    }
+}
+
+impl<T> WeakNode<T> {
+    /// Attempts to upgrade the WeakNode to a Node.
+    pub fn upgrade(weak: &WeakNode<T>) -> Option<Node<T>> {
+        weak.0.upgrade().map(Node)
     }
 }
 
