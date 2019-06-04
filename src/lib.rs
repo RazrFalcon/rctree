@@ -486,8 +486,8 @@ impl<T> Clone for WeakNode<T> {
 
 impl<T> WeakNode<T> {
     /// Attempts to upgrade the WeakNode to a Node.
-    pub fn upgrade(weak: &WeakNode<T>) -> Option<Node<T>> {
-        weak.0.upgrade().map(Node)
+    pub fn upgrade(&self) -> Option<Node<T>> {
+        self.0.upgrade().map(Node)
     }
 }
 
