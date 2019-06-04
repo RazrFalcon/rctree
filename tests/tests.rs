@@ -199,6 +199,31 @@ fn root_4() {
 }
 
 #[test]
+fn weak_1() {
+    let node1 = Node::new("node1");
+    let weak1 = node1.downgrade();
+    let weak2 = weak1.clone();
+
+    let node2 = weak1.upgrade().unwrap();
+    assert_eq!(node1, node2);
+
+    let node3 = weak2.upgrade().unwrap();
+    assert_eq!(node1, node3);
+}
+
+#[test]
+fn weak_2() {
+    let weak;
+
+    {
+        let node1 = Node::new("node1");
+        weak = node1.downgrade();
+    }
+
+    assert_eq!(None, weak.upgrade());
+}
+
+#[test]
 fn children_1() {
     let mut node1 = Node::new("node1");
     let node2 = Node::new("node2");
