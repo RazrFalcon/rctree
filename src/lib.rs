@@ -477,10 +477,17 @@ impl<T> Node<T> {
     }
 }
 
+/// Cloning a `WeakNode` only increments a reference count. It does not copy the data.
+impl<T> Clone for WeakNode<T> {
+    fn clone(&self) -> Self {
+        WeakNode(Weak::clone(&self.0))
+    }
+}
+
 impl<T> WeakNode<T> {
     /// Attempts to upgrade the WeakNode to a Node.
-    pub fn upgrade(weak: &WeakNode<T>) -> Option<Node<T>> {
-        weak.0.upgrade().map(Node)
+    pub fn upgrade(&self) -> Option<Node<T>> {
+        self.0.upgrade().map(Node)
     }
 }
 
