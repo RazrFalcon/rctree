@@ -1,5 +1,3 @@
-#[macro_use] extern crate indoc;
-#[macro_use] extern crate pretty_assertions;
 extern crate rctree;
 
 use rctree::{Node, NodeEdge};
@@ -83,11 +81,11 @@ fn make_copy_1() {
     let node1_copy = node1.make_copy();
     node1.append(node1_copy);
 
-    assert_eq!(format!("{:?}", TreePrinter(node1)), indoc!("
-        1
-            2
-            1
-    "));
+    assert_eq!(format!("{:?}", TreePrinter(node1)),
+"1
+    2
+    1
+");
 }
 
 #[test]
@@ -97,12 +95,12 @@ fn make_deep_copy_1() {
     node1.append(node2.clone());
     node2.append(node1.make_deep_copy());
 
-    assert_eq!(format!("{:?}", TreePrinter(node1)), indoc!("
+    assert_eq!(format!("{:?}", TreePrinter(node1)),
+"1
+    2
         1
             2
-                1
-                    2
-    "));
+");
 }
 
 #[test]
