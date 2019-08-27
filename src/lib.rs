@@ -484,6 +484,12 @@ impl<T> Clone for WeakNode<T> {
     }
 }
 
+impl<T: fmt::Debug> fmt::Debug for WeakNode<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("(WeakNode)")
+    }
+}
+
 impl<T> WeakNode<T> {
     /// Attempts to upgrade the WeakNode to a Node.
     pub fn upgrade(&self) -> Option<Node<T>> {
