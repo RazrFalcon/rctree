@@ -110,13 +110,13 @@ impl<T> PartialEq for Node<T> {
 }
 
 impl<T: fmt::Debug> fmt::Debug for Node<T> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Debug::fmt(&*self.borrow(), f)
     }
 }
 
 impl<T: fmt::Display> fmt::Display for Node<T> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(&*self.borrow(), f)
     }
 }
@@ -204,7 +204,7 @@ impl<T> Node<T> {
     /// # Panics
     ///
     /// Panics if the node is currently mutably borrowed.
-    pub fn borrow(&self) -> Ref<T> {
+    pub fn borrow(&self) -> Ref<'_, T> {
         Ref::map(self.0.borrow(), |v| &v.data)
     }
 
@@ -213,7 +213,7 @@ impl<T> Node<T> {
     /// # Panics
     ///
     /// Panics if the node is currently borrowed.
-    pub fn borrow_mut(&mut self) -> RefMut<T> {
+    pub fn borrow_mut(&mut self) -> RefMut<'_, T> {
         RefMut::map(self.0.borrow_mut(), |v| &mut v.data)
     }
 

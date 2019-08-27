@@ -1,5 +1,3 @@
-extern crate rctree;
-
 use rctree::{Node, NodeEdge};
 
 use std::fmt;
@@ -55,7 +53,7 @@ fn it_works() {
 struct TreePrinter<T>(Node<T>);
 
 impl<T: fmt::Debug> fmt::Debug for TreePrinter<T> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "{:?}", self.0.borrow()).unwrap();
         iter_children(&self.0, 1, f);
 
@@ -63,7 +61,7 @@ impl<T: fmt::Debug> fmt::Debug for TreePrinter<T> {
     }
 }
 
-fn iter_children<T: fmt::Debug>(parent: &Node<T>, depth: usize, f: &mut fmt::Formatter) {
+fn iter_children<T: fmt::Debug>(parent: &Node<T>, depth: usize, f: &mut fmt::Formatter<'_>) {
     for child in parent.children() {
         for _ in 0..depth {
             write!(f, "    ").unwrap();
