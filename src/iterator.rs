@@ -11,13 +11,9 @@ macro_rules! impl_node_iterator {
             ///
             /// Panics if the node about to be yielded is currently mutably borrowed.
             fn next(&mut self) -> Option<Self::Item> {
-                match self.0.take() {
-                    Some(node) => {
-                        self.0 = $next(&node);
-                        Some(node)
-                    }
-                    None => None
-                }
+                let node = self.0.take()?;
+                self.0 = $next(&node);
+                Some(node)
             }
         }
     }
@@ -87,13 +83,9 @@ impl<T> Iterator for Children<T> {
             return None;
         }
 
-        match self.next.take() {
-            Some(node) => {
-                self.next = node.next_sibling();
-                Some(node)
-            }
-            None => None
-        }
+        let node = self.next.take()?;
+        self.next = node.next_sibling();
+        Some(node)
     }
 }
 
@@ -106,13 +98,9 @@ impl<T> DoubleEndedIterator for Children<T> {
             return None;
         }
 
-        match self.next_back.take() {
-            Some(node) => {
-                self.next_back = node.previous_sibling();
-                Some(node)
-            }
-            None => None
-        }
+        let node = self.next_back.take()?;
+        self.next_back = node.previous_sibling();
+        Some(node)
     }
 }
 
@@ -263,13 +251,9 @@ impl<T> Iterator for Traverse<T> {
             return None;
         }
 
-        match self.next.take() {
-            Some(item) => {
-                self.next = item.next_item(&self.root);
-                Some(item)
-            }
-            None => None
-        }
+        let item = self.next.take()?;
+        self.next = item.next_item(&self.root);
+        Some(item)
     }
 }
 
@@ -282,12 +266,8 @@ impl<T> DoubleEndedIterator for Traverse<T> {
             return None;
         }
 
-        match self.next_back.take() {
-            Some(item) => {
-                self.next_back = item.previous_item(&self.root);
-                Some(item)
-            }
-            None => None
-        }
+        let item = self.next_back.take()?;
+        self.next_back = item.previous_item(&self.root);
+        Some(item)
     }
 }
