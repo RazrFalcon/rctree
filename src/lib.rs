@@ -302,7 +302,7 @@ impl<T> Node<T> {
         {
             let mut new_child_borrow = new_child.0.borrow_mut();
             new_child_borrow.detach();
-            new_child_borrow.root = Some(self_borrow.root.clone().unwrap_or(Rc::downgrade(&self.0)));
+            new_child_borrow.root = Some(self_borrow.root.clone().unwrap_or_else(|| Rc::downgrade(&self.0)));
             new_child_borrow.parent = Some(Rc::downgrade(&self.0));
             if let Some(last_child_weak) = self_borrow.last_child.take() {
                 if let Some(last_child_strong) = last_child_weak.upgrade() {
@@ -336,7 +336,7 @@ impl<T> Node<T> {
         {
             let mut new_child_borrow = new_child.0.borrow_mut();
             new_child_borrow.detach();
-            new_child_borrow.root = Some(self_borrow.root.clone().unwrap_or(Rc::downgrade(&self.0)));
+            new_child_borrow.root = Some(self_borrow.root.clone().unwrap_or_else(|| Rc::downgrade(&self.0)));
             new_child_borrow.parent = Some(Rc::downgrade(&self.0));
             match self_borrow.first_child.take() {
                 Some(first_child_strong) => {
