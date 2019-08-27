@@ -58,16 +58,15 @@ Disadvantages:
 */
 
 #![doc(html_root_url = "https://docs.rs/rctree/0.3.3")]
-
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+use std::cell::{Ref, RefCell, RefMut};
 use std::fmt;
-use std::cell::{RefCell, Ref, RefMut};
 use std::rc::{Rc, Weak};
 
 pub use crate::iterator::{
-    Ancestors, PrecedingSiblings, FollowingSiblings, Children, Descendants, Traverse, NodeEdge
+    Ancestors, Children, Descendants, FollowingSiblings, NodeEdge, PrecedingSiblings, Traverse,
 };
 
 pub mod iterator;
@@ -290,7 +289,12 @@ impl<T> Node<T> {
         {
             let mut new_child_borrow = new_child.0.borrow_mut();
             new_child_borrow.detach();
-            new_child_borrow.root = Some(self_borrow.root.clone().unwrap_or_else(|| Rc::downgrade(&self.0)));
+            new_child_borrow.root = Some(
+                self_borrow
+                    .root
+                    .clone()
+                    .unwrap_or_else(|| Rc::downgrade(&self.0)),
+            );
             new_child_borrow.parent = Some(Rc::downgrade(&self.0));
             if let Some(last_child_weak) = self_borrow.last_child.take() {
                 if let Some(last_child_strong) = last_child_weak.upgrade() {
@@ -324,7 +328,12 @@ impl<T> Node<T> {
         {
             let mut new_child_borrow = new_child.0.borrow_mut();
             new_child_borrow.detach();
-            new_child_borrow.root = Some(self_borrow.root.clone().unwrap_or_else(|| Rc::downgrade(&self.0)));
+            new_child_borrow.root = Some(
+                self_borrow
+                    .root
+                    .clone()
+                    .unwrap_or_else(|| Rc::downgrade(&self.0)),
+            );
             new_child_borrow.parent = Some(Rc::downgrade(&self.0));
             match self_borrow.first_child.take() {
                 Some(first_child_strong) => {
@@ -350,7 +359,10 @@ impl<T> Node<T> {
     ///
     /// Panics if the node, the new sibling, or one of their adjoining nodes is currently borrowed.
     pub fn insert_after(&mut self, new_sibling: Node<T>) {
-        assert!(*self != new_sibling, "a node cannot be inserted after itself");
+        assert!(
+            *self != new_sibling,
+            "a node cannot be inserted after itself"
+        );
 
         let mut self_borrow = self.0.borrow_mut();
         {
@@ -390,7 +402,10 @@ impl<T> Node<T> {
     ///
     /// Panics if the node, the new sibling, or one of their adjoining nodes is currently borrowed.
     pub fn insert_before(&mut self, new_sibling: Node<T>) {
-        assert!(*self != new_sibling, "a node cannot be inserted before itself");
+        assert!(
+            *self != new_sibling,
+            "a node cannot be inserted before itself"
+        );
 
         let mut self_borrow = self.0.borrow_mut();
         let mut previous_sibling_opt = None;
@@ -433,7 +448,8 @@ impl<T> Node<T> {
     ///
     /// Panics if the node is currently mutably borrowed.
     pub fn make_copy(&mut self) -> Node<T>
-        where T: Clone
+    where
+        T: Clone,
     {
         Node::new(self.borrow().clone())
     }
@@ -444,7 +460,8 @@ impl<T> Node<T> {
     ///
     /// Panics if any of the descendant nodes are currently mutably borrowed.
     pub fn make_deep_copy(&mut self) -> Node<T>
-        where T: Clone
+    where
+        T: Clone,
     {
         let mut root = self.make_copy();
         Node::_make_deep_copy(&mut root, self);
@@ -452,7 +469,8 @@ impl<T> Node<T> {
     }
 
     fn _make_deep_copy(parent: &mut Node<T>, node: &Node<T>)
-        where T: Clone
+    where
+        T: Clone,
     {
         for mut child in node.children() {
             let mut new_node = child.make_copy();
@@ -486,7 +504,9 @@ impl<T> NodeData<T> {
         let previous_sibling_weak = self.previous_sibling.take();
         let next_sibling_strong = self.next_sibling.take();
 
-        let previous_sibling_opt = previous_sibling_weak.as_ref().and_then(|weak| weak.upgrade());
+        let previous_sibling_opt = previous_sibling_weak
+            .as_ref()
+            .and_then(|weak| weak.upgrade());
 
         if let Some(next_sibling_ref) = next_sibling_strong.as_ref() {
             let mut next_sibling_borrow = next_sibling_ref.borrow_mut();

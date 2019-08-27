@@ -16,7 +16,7 @@ macro_rules! impl_node_iterator {
                 Some(node)
             }
         }
-    }
+    };
 }
 
 /// An iterator of nodes to the ancestors a given node.
@@ -124,12 +124,11 @@ impl<T> Iterator for Descendants<T> {
             match self.0.next() {
                 Some(NodeEdge::Start(node)) => return Some(node),
                 Some(NodeEdge::End(_)) => {}
-                None => return None
+                None => return None,
             }
         }
     }
 }
-
 
 /// A node type during traverse.
 #[derive(Clone, Debug)]
@@ -203,8 +202,8 @@ impl<T> NodeEdge<T> {
                             // if the tree has been modified during iteration,
                             // but silently stoping iteration
                             // seems a more sensible behavior than panicking.
-                            None => None
-                        }
+                            None => None,
+                        },
                     }
                 }
             }
