@@ -2,6 +2,7 @@
 [![Build Status](https://travis-ci.org/RazrFalcon/rctree.svg?branch=master)](https://travis-ci.org/RazrFalcon/rctree)
 [![Crates.io](https://img.shields.io/crates/v/rctree.svg)](https://crates.io/crates/rctree)
 [![Documentation](https://docs.rs/rctree/badge.svg)](https://docs.rs/rctree)
+[![Rust 1.17+](https://img.shields.io/badge/rust-1.17+-orange.svg)](https://www.rust-lang.org)
 
 *rctree* is a "DOM-like" tree implemented using reference counting.
 
@@ -63,10 +64,6 @@ Disadvantages:
   requires incrementing and decrementing reference counts,
   which causes run-time overhead.
 * Nodes are allocated individually, which may cause memory fragmentation and hurt performance.
-
-### Dependency
-
-[Rust](https://www.rust-lang.org/) >= 1.17
 
 ### License
 
