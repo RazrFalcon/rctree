@@ -81,7 +81,6 @@ pub struct Node<T>(Link<T>);
 pub struct WeakNode<T>(WeakLink<T>);
 
 struct NodeData<T> {
-    root: Option<WeakLink<T>>,
     parent: Option<WeakLink<T>>,
     first_child: Option<Link<T>>,
     last_child: Option<WeakLink<T>>,
@@ -130,7 +129,6 @@ impl<T> Node<T> {
     /// Creates a new node from its associated data.
     pub fn new(data: T) -> Node<T> {
         Node(Rc::new(RefCell::new(NodeData {
-            root: None,
             parent: None,
             first_child: None,
             last_child: None,
@@ -143,20 +141,6 @@ impl<T> Node<T> {
     /// Returns a weak referece to a node.
     pub fn downgrade(&self) -> WeakNode<T> {
         WeakNode(Rc::downgrade(&self.0))
-    }
-
-    /// Returns a root node.
-    ///
-    /// If the current node is the root node - will return itself.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the node is currently mutably borrowed.
-    pub fn root(&self) -> Node<T> {
-        match self.0.borrow().root.as_ref() {
-            Some(v) => Node(v.upgrade().unwrap()),
-            None => self.clone(),
-        }
     }
 
     /// Returns a parent node, unless this node is the root of the tree.
@@ -302,7 +286,6 @@ impl<T> Node<T> {
         {
             let mut new_child_borrow = new_child.0.borrow_mut();
             new_child_borrow.detach();
-            new_child_borrow.root = Some(self_borrow.root.clone().unwrap_or_else(|| Rc::downgrade(&self.0)));
             new_child_borrow.parent = Some(Rc::downgrade(&self.0));
             if let Some(last_child_weak) = self_borrow.last_child.take() {
                 if let Some(last_child_strong) = last_child_weak.upgrade() {
@@ -336,7 +319,6 @@ impl<T> Node<T> {
         {
             let mut new_child_borrow = new_child.0.borrow_mut();
             new_child_borrow.detach();
-            new_child_borrow.root = Some(self_borrow.root.clone().unwrap_or_else(|| Rc::downgrade(&self.0)));
             new_child_borrow.parent = Some(Rc::downgrade(&self.0));
             match self_borrow.first_child.take() {
                 Some(first_child_strong) => {
@@ -368,7 +350,6 @@ impl<T> Node<T> {
         {
             let mut new_sibling_borrow = new_sibling.0.borrow_mut();
             new_sibling_borrow.detach();
-            new_sibling_borrow.root = self_borrow.root.clone();
             new_sibling_borrow.parent = self_borrow.parent.clone();
             new_sibling_borrow.previous_sibling = Some(Rc::downgrade(&self.0));
             match self_borrow.next_sibling.take() {
@@ -409,7 +390,6 @@ impl<T> Node<T> {
         {
             let mut new_sibling_borrow = new_sibling.0.borrow_mut();
             new_sibling_borrow.detach();
-            new_sibling_borrow.root = self_borrow.root.clone();
             new_sibling_borrow.parent = self_borrow.parent.clone();
             new_sibling_borrow.next_sibling = Some(self.0.clone());
             if let Some(previous_sibling_weak) = self_borrow.previous_sibling.take() {

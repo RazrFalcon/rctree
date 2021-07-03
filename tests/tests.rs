@@ -158,45 +158,6 @@ fn stack_overflow() {
 }
 
 #[test]
-fn root_1() {
-    let node1 = Node::new(1);
-    assert_eq!(node1, node1.root());
-}
-
-#[test]
-fn root_2() {
-    let mut node1 = Node::new("node1");
-    let node2 = Node::new("node2");
-    node1.append(node2.clone());
-    assert_eq!(node1.root(), node1);
-    assert_eq!(node2.root(), node1);
-}
-
-#[test]
-fn root_3() {
-    let mut node1 = Node::new("node1");
-    let mut node2 = Node::new("node2");
-    let node3 = Node::new("node3");
-    node1.append(node2.clone());
-    node2.append(node3.clone());
-    assert_eq!(node1.root(), node1);
-    assert_eq!(node2.root(), node1);
-    assert_eq!(node3.root(), node1);
-}
-
-#[test]
-fn root_4() {
-    let mut node1 = Node::new("node1");
-    let node2 = Node::new("node2");
-    let node3 = Node::new("node3");
-    node1.append(node2.clone());
-    node1.prepend(node3.clone());
-    assert_eq!(node1.root(), node1);
-    assert_eq!(node2.root(), node1);
-    assert_eq!(node3.root(), node1);
-}
-
-#[test]
 fn weak_1() {
     let node1 = Node::new("node1");
     let weak1 = node1.downgrade();
