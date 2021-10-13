@@ -115,16 +115,6 @@ impl<T: fmt::Display> fmt::Display for Node<T> {
 }
 
 
-macro_rules! try_opt {
-    ($expr: expr) => {
-        match $expr {
-            Some(value) => value,
-            None => return None
-        }
-    }
-}
-
-
 impl<T> Node<T> {
     /// Creates a new node from its associated data.
     pub fn new(data: T) -> Node<T> {
@@ -149,7 +139,7 @@ impl<T> Node<T> {
     ///
     /// Panics if the node is currently mutably borrowed.
     pub fn parent(&self) -> Option<Node<T>> {
-        Some(Node(try_opt!(try_opt!(self.0.borrow().parent.as_ref()).upgrade())))
+        Some(Node(self.0.borrow().parent.as_ref()?.upgrade()?))
     }
 
     /// Returns a first child of this node, unless it has no child.
@@ -158,7 +148,7 @@ impl<T> Node<T> {
     ///
     /// Panics if the node is currently mutably borrowed.
     pub fn first_child(&self) -> Option<Node<T>> {
-        Some(Node(try_opt!(self.0.borrow().first_child.as_ref()).clone()))
+        Some(Node(self.0.borrow().first_child.as_ref()?.clone()))
     }
 
     /// Returns a last child of this node, unless it has no child.
@@ -167,7 +157,7 @@ impl<T> Node<T> {
     ///
     /// Panics if the node is currently mutably borrowed.
     pub fn last_child(&self) -> Option<Node<T>> {
-        Some(Node(try_opt!(try_opt!(self.0.borrow().last_child.as_ref()).upgrade())))
+        Some(Node(self.0.borrow().last_child.as_ref()?.upgrade()?))
     }
 
     /// Returns the previous sibling of this node, unless it is a first child.
@@ -176,7 +166,7 @@ impl<T> Node<T> {
     ///
     /// Panics if the node is currently mutably borrowed.
     pub fn previous_sibling(&self) -> Option<Node<T>> {
-        Some(Node(try_opt!(try_opt!(self.0.borrow().previous_sibling.as_ref()).upgrade())))
+        Some(Node(self.0.borrow().previous_sibling.as_ref()?.upgrade()?))
     }
 
     /// Returns the next sibling of this node, unless it is a last child.
@@ -185,7 +175,7 @@ impl<T> Node<T> {
     ///
     /// Panics if the node is currently mutably borrowed.
     pub fn next_sibling(&self) -> Option<Node<T>> {
-        Some(Node(try_opt!(self.0.borrow().next_sibling.as_ref()).clone()))
+        Some(Node(self.0.borrow().next_sibling.as_ref()?.clone()))
     }
 
     /// Returns a shared reference to this node's data
