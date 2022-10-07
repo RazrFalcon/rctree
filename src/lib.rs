@@ -58,12 +58,11 @@ Disadvantages:
 */
 
 #![doc(html_root_url = "https://docs.rs/rctree/0.4.0")]
-
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+use std::cell::{Ref, RefCell, RefMut};
 use std::fmt;
-use std::cell::{RefCell, Ref, RefMut};
 use std::rc::{Rc, Weak};
 
 type Link<T> = Rc<RefCell<NodeData<T>>>;
@@ -113,7 +112,6 @@ impl<T: fmt::Display> fmt::Display for Node<T> {
         fmt::Display::fmt(&*self.borrow(), f)
     }
 }
-
 
 impl<T> Node<T> {
     /// Creates a new node from its associated data.
@@ -192,7 +190,7 @@ impl<T> Node<T> {
     /// # Panics
     ///
     /// Panics if the node is currently borrowed.
-    pub fn borrow_mut(&mut self) -> RefMut<T> {
+    pub fn borrow_mut(&self) -> RefMut<T> {
         RefMut::map(self.0.borrow_mut(), |v| &mut v.data)
     }
 
@@ -259,7 +257,7 @@ impl<T> Node<T> {
     /// # Panics
     ///
     /// Panics if the node or one of its adjoining nodes is currently borrowed.
-    pub fn detach(&mut self) {
+    pub fn detach(&self) {
         self.0.borrow_mut().detach();
     }
 
@@ -268,7 +266,7 @@ impl<T> Node<T> {
     /// # Panics
     ///
     /// Panics if the node, the new child, or one of their adjoining nodes is currently borrowed.
-    pub fn append(&mut self, new_child: Node<T>) {
+    pub fn append(&self, new_child: Node<T>) {
         assert!(*self != new_child, "a node cannot be appended to itself");
 
         let mut self_borrow = self.0.borrow_mut();
@@ -302,7 +300,7 @@ impl<T> Node<T> {
     /// # Panics
     ///
     /// Panics if the node, the new child, or one of their adjoining nodes is currently borrowed.
-    pub fn prepend(&mut self, new_child: Node<T>) {
+    pub fn prepend(&self, new_child: Node<T>) {
         assert!(*self != new_child, "a node cannot be prepended to itself");
 
         let mut self_borrow = self.0.borrow_mut();
@@ -333,8 +331,11 @@ impl<T> Node<T> {
     /// # Panics
     ///
     /// Panics if the node, the new sibling, or one of their adjoining nodes is currently borrowed.
-    pub fn insert_after(&mut self, new_sibling: Node<T>) {
-        assert!(*self != new_sibling, "a node cannot be inserted after itself");
+    pub fn insert_after(&self, new_sibling: Node<T>) {
+        assert!(
+            *self != new_sibling,
+            "a node cannot be inserted after itself"
+        );
 
         let mut self_borrow = self.0.borrow_mut();
         {
@@ -372,8 +373,11 @@ impl<T> Node<T> {
     /// # Panics
     ///
     /// Panics if the node, the new sibling, or one of their adjoining nodes is currently borrowed.
-    pub fn insert_before(&mut self, new_sibling: Node<T>) {
-        assert!(*self != new_sibling, "a node cannot be inserted before itself");
+    pub fn insert_before(&self, new_sibling: Node<T>) {
+        assert!(
+            *self != new_sibling,
+            "a node cannot be inserted before itself"
+        );
 
         let mut self_borrow = self.0.borrow_mut();
         let mut previous_sibling_opt = None;
@@ -414,8 +418,9 @@ impl<T> Node<T> {
     /// # Panics
     ///
     /// Panics if the node is currently mutably borrowed.
-    pub fn make_copy(&mut self) -> Node<T>
-        where T: Clone
+    pub fn make_copy(&self) -> Node<T>
+    where
+        T: Clone,
     {
         Node::new(self.borrow().clone())
     }
@@ -425,8 +430,9 @@ impl<T> Node<T> {
     /// # Panics
     ///
     /// Panics if any of the descendant nodes are currently mutably borrowed.
-    pub fn make_deep_copy(&mut self) -> Node<T>
-        where T: Clone
+    pub fn make_deep_copy(&self) -> Node<T>
+    where
+        T: Clone,
     {
         let mut root = self.make_copy();
         Node::_make_deep_copy(&mut root, self);
@@ -434,9 +440,10 @@ impl<T> Node<T> {
     }
 
     fn _make_deep_copy(parent: &mut Node<T>, node: &Node<T>)
-        where T: Clone
+    where
+        T: Clone,
     {
-        for mut child in node.children() {
+        for child in node.children() {
             let mut new_node = child.make_copy();
             parent.append(new_node.clone());
 
@@ -474,7 +481,9 @@ impl<T> NodeData<T> {
         let previous_sibling_weak = self.previous_sibling.take();
         let next_sibling_strong = self.next_sibling.take();
 
-        let previous_sibling_opt = previous_sibling_weak.as_ref().and_then(|weak| weak.upgrade());
+        let previous_sibling_opt = previous_sibling_weak
+            .as_ref()
+            .and_then(|weak| weak.upgrade());
 
         if let Some(next_sibling_ref) = next_sibling_strong.as_ref() {
             let mut next_sibling_borrow = next_sibling_ref.borrow_mut();
@@ -514,7 +523,7 @@ impl<T> Drop for NodeData<T> {
             }
         }
 
-        for mut node in stack {
+        for node in stack {
             node.detach();
         }
     }
@@ -523,12 +532,12 @@ impl<T> Drop for NodeData<T> {
 /// Iterators prelude.
 pub mod iterator {
     pub use super::Ancestors;
-    pub use super::PrecedingSiblings;
-    pub use super::FollowingSiblings;
     pub use super::Children;
     pub use super::Descendants;
-    pub use super::Traverse;
+    pub use super::FollowingSiblings;
     pub use super::NodeEdge;
+    pub use super::PrecedingSiblings;
+    pub use super::Traverse;
 }
 
 macro_rules! impl_node_iterator {
@@ -545,11 +554,11 @@ macro_rules! impl_node_iterator {
                         self.0 = $next(&node);
                         Some(node)
                     }
-                    None => None
+                    None => None,
                 }
             }
         }
-    }
+    };
 }
 
 /// An iterator of nodes to the ancestors a given node.
@@ -596,7 +605,7 @@ impl<T> Iterator for Children<T> {
                 self.next = node.next_sibling();
                 Some(node)
             }
-            None => None
+            None => None,
         }
     }
 }
@@ -615,7 +624,7 @@ impl<T> DoubleEndedIterator for Children<T> {
                 self.next_back = node.previous_sibling();
                 Some(node)
             }
-            None => None
+            None => None,
         }
     }
 }
@@ -634,12 +643,11 @@ impl<T> Iterator for Descendants<T> {
             match self.0.next() {
                 Some(NodeEdge::Start(node)) => return Some(node),
                 Some(NodeEdge::End(_)) => {}
-                None => return None
+                None => return None,
             }
         }
     }
 }
-
 
 /// A node type during traverse.
 #[derive(Clone, Debug)]
@@ -713,8 +721,8 @@ impl<T> NodeEdge<T> {
                             // if the tree has been modified during iteration,
                             // but silently stoping iteration
                             // seems a more sensible behavior than panicking.
-                            None => None
-                        }
+                            None => None,
+                        },
                     }
                 }
             }
@@ -756,7 +764,7 @@ impl<T> Iterator for Traverse<T> {
                 self.next = item.next_item(&self.root);
                 Some(item)
             }
-            None => None
+            None => None,
         }
     }
 }
@@ -775,7 +783,7 @@ impl<T> DoubleEndedIterator for Traverse<T> {
                 self.next_back = item.previous_item(&self.root);
                 Some(item)
             }
-            None => None
+            None => None,
         }
     }
 }
