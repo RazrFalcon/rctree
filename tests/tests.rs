@@ -23,34 +23,36 @@ fn it_works() {
     };
 
     {
-        let a = new();  // 1
-        a.append(new());  // 2
-        a.append(new());  // 3
-        a.prepend(new());  // 4
-        let b = new();  // 5
+        let a = new(); // 1
+        a.append(new()); // 2
+        a.append(new()); // 3
+        a.prepend(new()); // 4
+        let b = new(); // 5
         b.append(a.clone());
-        a.insert_before(new());  // 6
-        a.insert_before(new());  // 7
-        a.insert_after(new());  // 8
-        a.insert_after(new());  // 9
-        let c = new();  // 10
+        a.insert_before(new()); // 6
+        a.insert_before(new()); // 7
+        a.insert_after(new()); // 8
+        a.insert_after(new()); // 9
+        let c = new(); // 10
         b.append(c.clone());
 
         assert_eq!(drop_counter.get(), 0);
         c.previous_sibling().unwrap().detach();
         assert_eq!(drop_counter.get(), 1);
 
-        assert_eq!(b.descendants().map(|node| {
-            let borrow = node.borrow();
-            borrow.0
-        }).collect::<Vec<_>>(), [
-            5, 6, 7, 1, 4, 2, 3, 9, 10
-        ]);
+        assert_eq!(
+            b.descendants()
+                .map(|node| {
+                    let borrow = node.borrow();
+                    borrow.0
+                })
+                .collect::<Vec<_>>(),
+            [5, 6, 7, 1, 4, 2, 3, 9, 10]
+        );
     }
 
     assert_eq!(drop_counter.get(), 10);
 }
-
 
 struct TreePrinter<T>(Node<T>);
 
@@ -81,11 +83,13 @@ fn make_copy_1() {
     let node1_copy = node1.make_copy();
     node1.append(node1_copy);
 
-    assert_eq!(format!("{:?}", TreePrinter(node1)),
-"1
+    assert_eq!(
+        format!("{:?}", TreePrinter(node1)),
+        "1
     2
     1
-");
+"
+    );
 }
 
 #[test]
@@ -95,12 +99,14 @@ fn make_deep_copy_1() {
     node1.append(node2.clone());
     node2.append(node1.make_deep_copy());
 
-    assert_eq!(format!("{:?}", TreePrinter(node1)),
-"1
+    assert_eq!(
+        format!("{:?}", TreePrinter(node1)),
+        "1
     2
         1
             2
-");
+"
+    );
 }
 
 #[test]
