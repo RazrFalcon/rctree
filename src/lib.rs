@@ -666,7 +666,7 @@ pub enum NodeEdge<T> {
 // Implement PartialEq manually, because we do not need to require T: PartialEq
 impl<T> PartialEq for NodeEdge<T> {
     fn eq(&self, other: &NodeEdge<T>) -> bool {
-        match (&*self, &*other) {
+        match (self, other) {
             (&NodeEdge::Start(ref n1), &NodeEdge::Start(ref n2)) => *n1 == *n2,
             (&NodeEdge::End(ref n1), &NodeEdge::End(ref n2)) => *n1 == *n2,
             _ => false,
@@ -687,15 +687,11 @@ impl<T> NodeEdge<T> {
                 } else {
                     match node.next_sibling() {
                         Some(next_sibling) => Some(NodeEdge::Start(next_sibling)),
-                        None => match node.parent() {
-                            Some(parent) => Some(NodeEdge::End(parent)),
-
-                            // `node.parent()` here can only be `None`
-                            // if the tree has been modified during iteration,
-                            // but silently stoping iteration
-                            // seems a more sensible behavior than panicking.
-                            None => None,
-                        },
+                        // `node.parent()` here can only be `None`
+                        // if the tree has been modified during iteration,
+                        // but silently stopping iteration
+                        // seems a more sensible behavior than panicking.
+                        None => node.parent().map(NodeEdge::End),
                     }
                 }
             }
@@ -714,15 +710,11 @@ impl<T> NodeEdge<T> {
                 } else {
                     match node.previous_sibling() {
                         Some(previous_sibling) => Some(NodeEdge::End(previous_sibling)),
-                        None => match node.parent() {
-                            Some(parent) => Some(NodeEdge::Start(parent)),
-
-                            // `node.parent()` here can only be `None`
-                            // if the tree has been modified during iteration,
-                            // but silently stoping iteration
-                            // seems a more sensible behavior than panicking.
-                            None => None,
-                        },
+                        // `node.parent()` here can only be `None`
+                        // if the tree has been modified during iteration,
+                        // but silently stopping iteration
+                        // seems a more sensible behavior than panicking.
+                        None => node.parent().map(NodeEdge::Start),
                     }
                 }
             }
