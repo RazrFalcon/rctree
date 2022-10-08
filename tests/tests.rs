@@ -23,11 +23,11 @@ fn it_works() {
     };
 
     {
-        let mut a = new();  // 1
+        let a = new();  // 1
         a.append(new());  // 2
         a.append(new());  // 3
         a.prepend(new());  // 4
-        let mut b = new();  // 5
+        let b = new();  // 5
         b.append(a.clone());
         a.insert_before(new());  // 6
         a.insert_before(new());  // 7
@@ -75,7 +75,7 @@ fn iter_children<T: fmt::Debug>(parent: &Node<T>, depth: usize, f: &mut fmt::For
 
 #[test]
 fn make_copy_1() {
-    let mut node1 = Node::new(1);
+    let node1 = Node::new(1);
     let node2 = Node::new(2);
     node1.append(node2);
     let node1_copy = node1.make_copy();
@@ -90,8 +90,8 @@ fn make_copy_1() {
 
 #[test]
 fn make_deep_copy_1() {
-    let mut node1 = Node::new(1);
-    let mut node2 = Node::new(2);
+    let node1 = Node::new(1);
+    let node2 = Node::new(2);
     node1.append(node2.clone());
     node2.append(node1.make_deep_copy());
 
@@ -106,7 +106,7 @@ fn make_deep_copy_1() {
 #[test]
 #[should_panic]
 fn append_1() {
-    let mut node1 = Node::new(1);
+    let node1 = Node::new(1);
     let node1_2 = node1.clone();
     node1.append(node1_2);
 }
@@ -114,7 +114,7 @@ fn append_1() {
 #[test]
 #[should_panic]
 fn prepend_1() {
-    let mut node1 = Node::new(1);
+    let node1 = Node::new(1);
     let node1_2 = node1.clone();
     node1.prepend(node1_2);
 }
@@ -122,7 +122,7 @@ fn prepend_1() {
 #[test]
 #[should_panic]
 fn insert_before_1() {
-    let mut node1 = Node::new(1);
+    let node1 = Node::new(1);
     let node1_2 = node1.clone();
     node1.insert_before(node1_2);
 }
@@ -130,7 +130,7 @@ fn insert_before_1() {
 #[test]
 #[should_panic]
 fn insert_after_1() {
-    let mut node1 = Node::new(1);
+    let node1 = Node::new(1);
     let node1_2 = node1.clone();
     node1.insert_after(node1_2);
 }
@@ -138,8 +138,8 @@ fn insert_after_1() {
 #[test]
 #[should_panic]
 fn iter_1() {
-    let mut node1 = Node::new(1);
-    let mut node2 = Node::new(2);
+    let node1 = Node::new(1);
+    let node2 = Node::new(2);
     node1.append(node2.clone());
     node2.append(node1.make_deep_copy());
 
@@ -151,7 +151,7 @@ fn iter_1() {
 fn stack_overflow() {
     let mut parent = Node::new(1);
     for _ in 0..200_000 {
-        let mut node = Node::new(1);
+        let node = Node::new(1);
         node.append(parent.clone());
         parent = node;
     }
@@ -184,7 +184,7 @@ fn weak_2() {
 
 #[test]
 fn children_1() {
-    let mut node1 = Node::new("node1");
+    let node1 = Node::new("node1");
     let node2 = Node::new("node2");
     let node3 = Node::new("node3");
     node1.append(node2.clone());
@@ -208,7 +208,7 @@ fn children_1() {
 
 #[test]
 fn children_2() {
-    let mut node1 = Node::new("node1");
+    let node1 = Node::new("node1");
     let node2 = Node::new("node2");
     let node3 = Node::new("node3");
     node1.append(node2.clone());
@@ -232,7 +232,7 @@ fn children_2() {
 
 #[test]
 fn traverse_1() {
-    let mut node1 = Node::new("node1");
+    let node1 = Node::new("node1");
     let node2 = Node::new("node2");
     let node3 = Node::new("node3");
     node1.append(node2.clone());
@@ -276,7 +276,7 @@ fn traverse_1() {
 
 #[test]
 fn traverse_2() {
-    let mut node1 = Node::new("node1");
+    let node1 = Node::new("node1");
     let node2 = Node::new("node2");
     let node3 = Node::new("node3");
     node1.append(node2.clone());
