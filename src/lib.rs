@@ -509,22 +509,26 @@ impl<T> NodeData<T> {
 
 impl<T> Drop for NodeData<T> {
     fn drop(&mut self) {
-        // Collect all descendant nodes and detach them to prevent the stack overflow.
+        // Detach all descendant nodes recursively to prevent a stack overflow.
+        if let Some(child) = self.first_child.take() {
+            let mut open_set = vec![child];
 
-        let mut stack = Vec::new();
-        if let Some(first_child) = self.first_child.as_ref() {
-            // Create `Node` from `NodeData`.
-            let first_child = Node(first_child.clone());
-            // Iterate `self` children, without creating yet another `Node`.
-            for child1 in first_child.following_siblings() {
-                for child2 in child1.descendants() {
-                    stack.push(child2);
+            while let Some(node) = open_set.pop() {
+                let mut node_data = node.borrow_mut();
+                if let Some(next_sibling) = node_data.next_sibling.as_ref() {
+                    open_set.push(next_sibling.clone());
                 }
-            }
-        }
 
-        for node in stack {
-            node.detach();
+                // Child nodes should be processed if and only if strong_count is one,
+                // which means self is the only reference. Otherwise keep the subtree unchanged.
+                if Rc::strong_count(&node) == 1 {
+                    if let Some(first_child) = node_data.first_child.as_ref() {
+                        open_set.push(first_child.clone());
+                    }
+                }
+
+                node_data.detach();
+            }
         }
     }
 }
