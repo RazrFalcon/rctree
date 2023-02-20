@@ -163,6 +163,33 @@ fn stack_overflow() {
     }
 }
 
+fn fan_tree(depth: i32, width: usize) -> Node<i32> {
+    let node = Node::new(depth);
+    if depth > 0 {
+        for _ in 0..width {
+            node.append(fan_tree(depth - 1, width));
+        }
+    }
+
+    node
+}
+
+#[test]
+fn drop_keeps_strong_refs() {
+    const CHILD_COUNT: usize = 3;
+
+    let (keep1, keep2) = {
+        let root = fan_tree(5, CHILD_COUNT);
+        (
+            root.first_child().unwrap().first_child().unwrap(),
+            root.first_child().unwrap().next_sibling().unwrap(),
+        )
+    };
+
+    assert_eq!(keep1.children().count(), CHILD_COUNT);
+    assert_eq!(keep2.children().count(), CHILD_COUNT);
+}
+
 #[test]
 fn weak_1() {
     let node1 = Node::new("node1");
