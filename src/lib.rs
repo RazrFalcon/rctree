@@ -126,7 +126,7 @@ impl<T> Node<T> {
         })))
     }
 
-    /// Returns a weak referece to a node.
+    /// Returns a weak reference to a node.
     pub fn downgrade(&self) -> WeakNode<T> {
         WeakNode(Rc::downgrade(&self.0))
     }
@@ -176,7 +176,7 @@ impl<T> Node<T> {
         Some(Node(self.0.borrow().next_sibling.as_ref()?.clone()))
     }
 
-    /// Returns a shared reference to this node's data
+    /// Returns a shared reference to this node's data.
     ///
     /// # Panics
     ///
@@ -185,7 +185,7 @@ impl<T> Node<T> {
         Ref::map(self.0.borrow(), |v| &v.data)
     }
 
-    /// Returns a unique/mutable reference to this node's data
+    /// Returns a unique/mutable reference to this node's data.
     ///
     /// # Panics
     ///
@@ -533,49 +533,53 @@ impl<T> Drop for NodeData<T> {
     }
 }
 
-/// Iterators prelude.
-pub mod iterator {
-    pub use super::Ancestors;
-    pub use super::Children;
-    pub use super::Descendants;
-    pub use super::FollowingSiblings;
-    pub use super::NodeEdge;
-    pub use super::PrecedingSiblings;
-    pub use super::Traverse;
-}
-
-macro_rules! impl_node_iterator {
-    ($name: ident, $next: expr) => {
-        impl<T> Iterator for $name<T> {
-            type Item = Node<T>;
-
-            /// # Panics
-            ///
-            /// Panics if the node about to be yielded is currently mutably borrowed.
-            fn next(&mut self) -> Option<Self::Item> {
-                match self.0.take() {
-                    Some(node) => {
-                        self.0 = $next(&node);
-                        Some(node)
-                    }
-                    None => None,
-                }
-            }
-        }
-    };
-}
-
 /// An iterator of nodes to the ancestors a given node.
 pub struct Ancestors<T>(Option<Node<T>>);
-impl_node_iterator!(Ancestors, |node: &Node<T>| node.parent());
+
+impl<T> Iterator for Ancestors<T> {
+    type Item = Node<T>;
+
+    /// # Panics
+    ///
+    /// Panics if the node about to be yielded is currently mutably borrowed.
+    fn next(&mut self) -> Option<Self::Item> {
+        let node = self.0.take()?;
+        self.0 = node.parent();
+        Some(node)
+    }
+}
 
 /// An iterator of nodes to the siblings before a given node.
 pub struct PrecedingSiblings<T>(Option<Node<T>>);
-impl_node_iterator!(PrecedingSiblings, |node: &Node<T>| node.previous_sibling());
+
+impl<T> Iterator for PrecedingSiblings<T> {
+    type Item = Node<T>;
+
+    /// # Panics
+    ///
+    /// Panics if the node about to be yielded is currently mutably borrowed.
+    fn next(&mut self) -> Option<Self::Item> {
+        let node = self.0.take()?;
+        self.0 = node.previous_sibling();
+        Some(node)
+    }
+}
 
 /// An iterator of nodes to the siblings after a given node.
 pub struct FollowingSiblings<T>(Option<Node<T>>);
-impl_node_iterator!(FollowingSiblings, |node: &Node<T>| node.next_sibling());
+
+impl<T> Iterator for FollowingSiblings<T> {
+    type Item = Node<T>;
+
+    /// # Panics
+    ///
+    /// Panics if the node about to be yielded is currently mutably borrowed.
+    fn next(&mut self) -> Option<Self::Item> {
+        let node = self.0.take()?;
+        self.0 = node.next_sibling();
+        Some(node)
+    }
+}
 
 /// A double ended iterator of nodes to the children of a given node.
 pub struct Children<T> {
@@ -604,13 +608,9 @@ impl<T> Iterator for Children<T> {
             return None;
         }
 
-        match self.next.take() {
-            Some(node) => {
-                self.next = node.next_sibling();
-                Some(node)
-            }
-            None => None,
-        }
+        let node = self.next.take()?;
+        self.next = node.next_sibling();
+        Some(node)
     }
 }
 
@@ -623,13 +623,9 @@ impl<T> DoubleEndedIterator for Children<T> {
             return None;
         }
 
-        match self.next_back.take() {
-            Some(node) => {
-                self.next_back = node.previous_sibling();
-                Some(node)
-            }
-            None => None,
-        }
+        let node = self.next_back.take()?;
+        self.next_back = node.previous_sibling();
+        Some(node)
     }
 }
 
@@ -671,15 +667,15 @@ pub enum NodeEdge<T> {
 impl<T> PartialEq for NodeEdge<T> {
     fn eq(&self, other: &NodeEdge<T>) -> bool {
         match (self, other) {
-            (&NodeEdge::Start(ref n1), &NodeEdge::Start(ref n2)) => *n1 == *n2,
-            (&NodeEdge::End(ref n1), &NodeEdge::End(ref n2)) => *n1 == *n2,
+            (NodeEdge::Start(ref n1), NodeEdge::Start(ref n2)) => *n1 == *n2,
+            (NodeEdge::End(ref n1), NodeEdge::End(ref n2)) => *n1 == *n2,
             _ => false,
         }
     }
 }
 
 impl<T> NodeEdge<T> {
-    fn next_item(&self, root: &Node<T>) -> Option<NodeEdge<T>> {
+    fn next_edge(&self, root: &Node<T>) -> Option<NodeEdge<T>> {
         match *self {
             NodeEdge::Start(ref node) => match node.first_child() {
                 Some(first_child) => Some(NodeEdge::Start(first_child)),
@@ -702,7 +698,7 @@ impl<T> NodeEdge<T> {
         }
     }
 
-    fn previous_item(&self, root: &Node<T>) -> Option<NodeEdge<T>> {
+    fn previous_edge(&self, root: &Node<T>) -> Option<NodeEdge<T>> {
         match *self {
             NodeEdge::End(ref node) => match node.last_child() {
                 Some(last_child) => Some(NodeEdge::End(last_child)),
@@ -735,10 +731,10 @@ pub struct Traverse<T> {
 }
 
 impl<T> Traverse<T> {
-    // true if self.next_back's next item is self.next
+    // true if self.next_back's next edge is self.next
     fn finished(&self) -> bool {
         match self.next_back {
-            Some(ref next_back) => next_back.next_item(&self.root) == self.next,
+            Some(ref next_back) => next_back.next_edge(&self.root) == self.next,
             _ => true,
         }
     }
@@ -755,13 +751,9 @@ impl<T> Iterator for Traverse<T> {
             return None;
         }
 
-        match self.next.take() {
-            Some(item) => {
-                self.next = item.next_item(&self.root);
-                Some(item)
-            }
-            None => None,
-        }
+        let node = self.next.take()?;
+        self.next = node.next_edge(&self.root);
+        Some(node)
     }
 }
 
@@ -774,12 +766,8 @@ impl<T> DoubleEndedIterator for Traverse<T> {
             return None;
         }
 
-        match self.next_back.take() {
-            Some(item) => {
-                self.next_back = item.previous_item(&self.root);
-                Some(item)
-            }
-            None => None,
-        }
+        let node = self.next_back.take()?;
+        self.next_back = node.previous_edge(&self.root);
+        Some(node)
     }
 }
