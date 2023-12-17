@@ -667,8 +667,8 @@ pub enum NodeEdge<T> {
 impl<T> PartialEq for NodeEdge<T> {
     fn eq(&self, other: &NodeEdge<T>) -> bool {
         match (self, other) {
-            (NodeEdge::Start(ref n1), NodeEdge::Start(ref n2)) => *n1 == *n2,
-            (NodeEdge::End(ref n1), NodeEdge::End(ref n2)) => *n1 == *n2,
+            (&NodeEdge::Start(ref n1), &NodeEdge::Start(ref n2)) => *n1 == *n2,
+            (&NodeEdge::End(ref n1), &NodeEdge::End(ref n2)) => *n1 == *n2,
             _ => false,
         }
     }
